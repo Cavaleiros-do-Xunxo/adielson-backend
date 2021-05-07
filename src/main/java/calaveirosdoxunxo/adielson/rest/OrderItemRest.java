@@ -1,7 +1,7 @@
 package calaveirosdoxunxo.adielson.rest;
 
-import calaveirosdoxunxo.adielson.entities.Order;
 import calaveirosdoxunxo.adielson.entities.OrderItem;
+import calaveirosdoxunxo.adielson.models.OrderItemRequest;
 import calaveirosdoxunxo.adielson.services.OrderItemService;
 import org.springframework.web.bind.annotation.*;
 
@@ -28,7 +28,7 @@ public class OrderItemRest {
     }
 
     @PostMapping
-    public OrderItem create(@RequestBody OrderItem order) {
+    public OrderItem create(@RequestBody OrderItemRequest order) {
         return service.create(order);
     }
 

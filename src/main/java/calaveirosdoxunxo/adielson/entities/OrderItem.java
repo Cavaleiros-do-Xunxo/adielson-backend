@@ -10,7 +10,7 @@ import javax.persistence.ManyToOne;
 @Entity
 public class OrderItem {
     @Id
-    long Id;
+    long id;
 
     @ManyToOne
     Order order;

@@ -1,6 +1,7 @@
 package calaveirosdoxunxo.adielson.rest;
 
 import calaveirosdoxunxo.adielson.entities.Order;
+import calaveirosdoxunxo.adielson.models.OrderRequest;
 import calaveirosdoxunxo.adielson.services.OrderService;
 import org.springframework.web.bind.annotation.*;
 
@@ -27,7 +28,7 @@ public class OrderRest {
     }
 
     @PostMapping
-    public Order create(@RequestBody Order order) {
+    public Order create(@RequestBody OrderRequest order) {
         return service.create(order);
     }
 
