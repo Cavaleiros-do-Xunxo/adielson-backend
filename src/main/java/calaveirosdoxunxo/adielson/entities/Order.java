@@ -4,13 +4,11 @@ import calaveirosdoxunxo.adielson.enums.DeliveryType;
 import calaveirosdoxunxo.adielson.enums.Status;
 import lombok.Data;
 
-import javax.persistence.Entity;
-import javax.persistence.Enumerated;
-import javax.persistence.Id;
-import javax.persistence.ManyToOne;
+import javax.persistence.*;
 
 @Data
 @Entity
+@Table(name = "orders")
 public class Order {
     @Id
     long id;
