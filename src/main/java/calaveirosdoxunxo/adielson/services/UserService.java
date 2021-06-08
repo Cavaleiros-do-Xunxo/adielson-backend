@@ -1,66 +1,71 @@
 package calaveirosdoxunxo.adielson.services;
 
 import calaveirosdoxunxo.adielson.entities.User;
-import calaveirosdoxunxo.adielson.models.LoginRequest;
+import calaveirosdoxunxo.adielson.enums.Role;
 import calaveirosdoxunxo.adielson.repositories.UserRepository;
 import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Optional;
-import java.util.Random;
 
 @Service
 public class UserService {
+
     private final UserRepository repository;
+    private final BCryptPasswordEncoder bcrypt;
 
-    public UserService(UserRepository repository) {
+    public UserService(UserRepository repository, BCryptPasswordEncoder bcrypt) {
         this.repository = repository;
+        this.bcrypt = bcrypt;
     }
 
-    public List<User> findAll(Example<User> user) {
-        return repository.findAll(user);
+    public List<User> findAll(User user, User loggedIn) {
+        if (loggedIn.getRole() == Role.CUSTOMER) {
+            user = loggedIn;
+        }
+        ExampleMatcher matcher = ExampleMatcher.matchingAll()
+                .withMatcher("name", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
+        return repository.findAll(Example.of(user, matcher));
     }
 
-    public User find(long id) {
-        Optional<User> oUser = repository.findById(id);
-        if (oUser.isEmpty()) {
-            throw new IllegalArgumentException("ID not found!");
+    public User find(long id, User user) {
+        if (user.getRole() == Role.CUSTOMER) {
+            return user;
+        } else {
+            return repository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("User not found"));
         }
-        return oUser.get();
     }
 
-    public User create(User user) {
-        if (user.getName() == null) {
-            throw new IllegalArgumentException("Name is null!");
+    public User patch(User request, long id, User loggedIn) {
+        User user = repository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+        if (request.getName() != null) {
+            user.setName(request.getName());
         }
-        if (user.getPassword() == null) {
-            throw new IllegalArgumentException("Password is null!");
+        if (request.getPassword() != null) {
+            user.setPassword(this.bcrypt.encode(request.getPassword()));
         }
-        if (user.getCpf() < 100_000_000_00D) {
-            throw new IllegalArgumentException("Cpf is invalid!");
+        if (request.getAddress() != null) {
+            user.setAddress(request.getAddress());
         }
-        user.setId((long) new Random().nextInt(1000));// TODO trocar por snowflake
-        return repository.save(user);
-    }
-
-    public User update(User request, long id) {
-        if (repository.findById(id).isEmpty()) {
-            throw new IllegalArgumentException("Id doesn't exist!");
+        if (request.getCpf() != null) {
+            if (request.getCpf() < 100_000_000_00L) {
+                throw new IllegalArgumentException("Cpf is invalid!");
+            }
+            user.setCpf(request.getCpf());
         }
-        if (request.getPassword() == null) {
-            throw new IllegalArgumentException("Password is null!");
+        if (request.getEmail() != null) {
+            user.setEmail(request.getEmail());
         }
-        if (request.getCpf() < 100_000_000_00D) {
-            throw new IllegalArgumentException("Cpf is invalid!");
+        if (request.getPhone() != null) {
+            user.setPhone(request.getPhone());
         }
-        User user = new User();
-        user.setName(request.getName());
-        user.setPassword(request.getPassword());
-        user.setAddress(request.getAddress());
-        user.setCpf(request.getCpf());
-        user.setEmail(request.getEmail());
-        user.setPhone(request.getPhone());
+        if (request.getRole() != null && loggedIn.getRole() == Role.ADMIN) {
+            user.setRole(request.getRole());
+        }
         return repository.save(user);
     }
 
@@ -68,38 +73,4 @@ public class UserService {
         repository.deleteById(id);
     }
 
-    public String login(LoginRequest login){
-        if(login.getName() == null || login.getPassword() == null){
-            throw new IllegalArgumentException("User is null!");
-        }
-        Optional<User> l = repository.findUserByNameAndPassword(login.getName(),login.getPassword());
-        if(l.isEmpty()){
-            throw new IllegalArgumentException("Invalid dont exist!");
-        }
-        return token(l.get());
-    }
-
-    public String register(User user){
-        if(user.getName() == null || user.getPassword() == null || user.getCpf() < 100_000_000_00D){
-            throw new IllegalArgumentException("Invalid User!");
-        }
-        if (repository.findUserByName(user.getName()).isPresent()) {
-            throw new IllegalArgumentException("Username is taken");/////////////////////////////////////
-        }
-        if (repository.findUserByCpf(user.getCpf()).isPresent()) {
-            throw new IllegalArgumentException("CPF is used");/////////////////////////////////////////
-        }
-        user.setId((long) new Random().nextInt(1000));// TODO trocar por snowflake
-        user.setPassword(Password(user.getPassword()));
-        repository.save(user);
-        return token(user);
-    }
-
-    public String token(User user){
-        return user.getName()+user.getId(); // TODO trocar para token
-    }
-
-    public String Password(String password){
-        return password; // TODO trocar para criptografia
-    }
 }

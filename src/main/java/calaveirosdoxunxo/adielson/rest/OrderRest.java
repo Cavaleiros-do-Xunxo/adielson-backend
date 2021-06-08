@@ -1,5 +1,6 @@
 package calaveirosdoxunxo.adielson.rest;
 
+import calaveirosdoxunxo.adielson.advice.security.SessionProvider;
 import calaveirosdoxunxo.adielson.entities.Order;
 import calaveirosdoxunxo.adielson.models.OrderRequest;
 import calaveirosdoxunxo.adielson.services.OrderService;
@@ -8,32 +9,40 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("order")
+@RequestMapping("orders")
 public class OrderRest {
 
     private final OrderService service;
+    private final SessionProvider session;
 
-    public OrderRest(OrderService service) {
+    public OrderRest(OrderService service, SessionProvider session) {
         this.service = service;
+        this.session = session;
     }
 
     @GetMapping
-    public List<Order> findAll() {
-        return service.findAll();
+    public List<Order> findAll(Order example) {
+        return service.findAll(example, session.getUser());
     }
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public Order find(@PathVariable("id") long id) {
-        return service.find(id);
+        return service.find(id, session.getUser());
     }
 
     @PostMapping
     public Order create(@RequestBody OrderRequest order) {
-        return service.create(order);
+        return service.create(order, this.session.getUser());
+    }
+
+    @PatchMapping("/{id}")
+    public Order patch(@PathVariable("id") long id, @RequestBody OrderRequest request) {
+        return service.patch(id, request);
     }
 
     @DeleteMapping("{id}")
     public void delete(@PathVariable("id") long id) {
         service.delete(id);
     }
+
 }

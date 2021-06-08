@@ -1,5 +1,7 @@
 package calaveirosdoxunxo.adielson.entities;
 
+import calaveirosdoxunxo.adielson.advice.serializer.LongToStringSerializer;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Data;
 
 import javax.persistence.Entity;
@@ -9,14 +11,19 @@ import javax.persistence.ManyToOne;
 @Data
 @Entity
 public class OrderItem {
+
     @Id
-    long id;
+    @JsonSerialize(using = LongToStringSerializer.class)
+    private long id;
 
     @ManyToOne
-    Order order;
+    private Order order;
 
     @ManyToOne
-    MenuItem item;
+    private MenuItem item;
 
-    double price;
+    private int count;
+
+    private double price;
+
 }

@@ -8,7 +8,6 @@ Users:
     GET /users			Returns all registered Users
     GET /users?var=value	Find User by Filter
     GET /users/{id}		Find User by ID
-    POST /users			Create a new Users
     DELETE /users/{id}		Delete a user by ID
     PUT /users			Edit a User
 
@@ -39,6 +38,9 @@ OrderItems:
     GET /orderItem/{order}      Find OrderItems by Order
     POST /orderItem             create a new OrderItem
     DELETE /orderItem/{id}      Delete a OrderItem by ID
+    
+Authentication:
+    POST /auth/register
 ```
 <br>
 Body examples:

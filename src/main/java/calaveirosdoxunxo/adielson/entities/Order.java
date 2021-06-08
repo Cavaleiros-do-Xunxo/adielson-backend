@@ -1,7 +1,9 @@
 package calaveirosdoxunxo.adielson.entities;
 
+import calaveirosdoxunxo.adielson.advice.serializer.LongToStringSerializer;
 import calaveirosdoxunxo.adielson.enums.DeliveryType;
 import calaveirosdoxunxo.adielson.enums.Status;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Data;
 
 import javax.persistence.*;
@@ -10,19 +12,22 @@ import javax.persistence.*;
 @Entity
 @Table(name = "orders")
 public class Order {
+
     @Id
-    long id;
+    @JsonSerialize(using = LongToStringSerializer.class)
+    private Long id;
 
     @ManyToOne
-    User user;
+    private User user;
 
-    @Enumerated
-    DeliveryType delivery;
+    @Enumerated(EnumType.STRING)
+    private DeliveryType delivery;
 
-    @Enumerated
-    Status status;
+    @Enumerated(EnumType.STRING)
+    private Status status;
 
-    Double total;
-    Long orderTime;
-    Long deliveryTime;
+    private Double total;
+    private Long orderTime;
+    private Long deliveryTime;
+
 }

@@ -3,8 +3,6 @@ package calaveirosdoxunxo.adielson.rest;
 import calaveirosdoxunxo.adielson.entities.MenuItem;
 import calaveirosdoxunxo.adielson.models.MenuItemRequest;
 import calaveirosdoxunxo.adielson.services.ItemsService;
-import org.springframework.data.domain.Example;
-import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,12 +19,10 @@ public class ItemsRest {
 
     @GetMapping
     public List<MenuItem> findAll(MenuItem item) {
-        ExampleMatcher matcher = ExampleMatcher.matchingAll()
-                .withMatcher("name", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
-        return service.findAll(Example.of(item, matcher));
+        return service.findAll(item);
     }
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public MenuItem find(@PathVariable("id") long id) {
         return service.find(id);
     }
@@ -36,18 +32,19 @@ public class ItemsRest {
         return service.create(item);
     }
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public void delete(@PathVariable("id") long id) {
         service.delete(id);
     }
 
-    @PutMapping("{id}")
-    public MenuItem update(@PathVariable("id") long id, @RequestBody MenuItemRequest item) {
-        return service.update(item, id);
+    @PutMapping("/{id}")
+    public MenuItem put(@PathVariable("id") long id, @RequestBody MenuItemRequest item) {
+        return service.put(item, id);
     }
 
-    @PatchMapping("{id}")
+    @PatchMapping("/{id}")
     public MenuItem patch(@PathVariable("id") long id, @RequestBody MenuItemRequest item) {
         return service.patch(item, id);
     }
+
 }

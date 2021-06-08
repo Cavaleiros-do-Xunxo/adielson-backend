@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("category")
+@RequestMapping("categories")
 public class CategoryRest {
 
     private final CategoryService service;
@@ -17,11 +17,11 @@ public class CategoryRest {
     }
 
     @GetMapping
-    public List<ItemCategory> findAll() {
-        return service.findAll();
+    public List<ItemCategory> findAll(ItemCategory example) {
+        return service.findAll(example);
     }
 
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public ItemCategory find(@PathVariable("id") long id) {
         return service.find(id);
     }
@@ -31,13 +31,14 @@ public class CategoryRest {
         return service.create(category);
     }
 
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     public void delete(@PathVariable("id") long id) {
         service.delete(id);
     }
 
-    @PutMapping
-    public ItemCategory update(@RequestBody ItemCategory category) {
-        return service.update(category);
+    @PutMapping("/{id}")
+    public ItemCategory update(@PathVariable("id") long id, @RequestBody ItemCategory category) {
+        return service.update(id, category);
     }
+
 }
