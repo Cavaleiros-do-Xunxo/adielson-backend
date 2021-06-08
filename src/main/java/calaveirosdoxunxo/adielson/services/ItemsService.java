@@ -1,36 +1,41 @@
 package calaveirosdoxunxo.adielson.services;
 
+import calaveirosdoxunxo.adielson.advice.Snowflake;
 import calaveirosdoxunxo.adielson.entities.ItemCategory;
 import calaveirosdoxunxo.adielson.entities.MenuItem;
 import calaveirosdoxunxo.adielson.models.MenuItemRequest;
 import calaveirosdoxunxo.adielson.repositories.CategoryRepository;
 import calaveirosdoxunxo.adielson.repositories.ItemRepository;
 import org.springframework.data.domain.Example;
+import org.springframework.data.domain.ExampleMatcher;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Random;
 
 @Service
 public class ItemsService {
 
     private final ItemRepository repository;
     private final CategoryRepository categoryRepository;
+    private final Snowflake snowflake;
 
-    public ItemsService(ItemRepository repository, CategoryRepository categoryRepository) {
+    public ItemsService(ItemRepository repository, CategoryRepository categoryRepository, Snowflake snowflake) {
         this.repository = repository;
         this.categoryRepository = categoryRepository;
+        this.snowflake = snowflake;
     }
 
-    public List<MenuItem> findAll(Example<MenuItem> exemple) {
-        return repository.findAll(exemple);
+    public List<MenuItem> findAll(MenuItem example) {
+        ExampleMatcher matcher = ExampleMatcher.matchingAll()
+                .withMatcher("name", ExampleMatcher.GenericPropertyMatchers.contains().ignoreCase());
+        return repository.findAll(Example.of(example, matcher));
     }
 
     public MenuItem find(long id) {
         Optional<MenuItem> oItem = repository.findById(id);
         if (oItem.isEmpty()) {
-            throw new IllegalArgumentException("ID not found!");
+            throw new IllegalArgumentException("Unknown item");
         }
         return oItem.get();
     }
@@ -47,7 +52,7 @@ public class ItemsService {
             throw new IllegalArgumentException("Category not found!");
         }
         MenuItem item = new MenuItem();
-        item.setId((long) new Random().nextInt(1000));// TODO trocar por snowflake
+        item.setId(this.snowflake.next());
         item.setName(request.getName());
         item.setPrice(request.getPrice());
         item.setImage(request.getImage());
@@ -61,9 +66,9 @@ public class ItemsService {
         repository.deleteById(id);
     }
 
-    public MenuItem update(MenuItemRequest request, long id) {
+    public MenuItem put(MenuItemRequest request, long id) {
         if (repository.findById(id).isEmpty()) {
-            throw new IllegalArgumentException("Id doesn't exist!");
+            throw new IllegalArgumentException("Unknown item");
         }
         if (request.getName() == null) {
             throw new IllegalArgumentException("Name is null!");
@@ -89,10 +94,11 @@ public class ItemsService {
     public MenuItem patch(MenuItemRequest request, long id) {
         Optional<MenuItem> oItem = repository.findById(id);
         if (oItem.isEmpty()) {
-            throw new IllegalArgumentException("Id doesn't exist!");
+            throw new IllegalArgumentException("Unknown item");
         }
         MenuItem item = oItem.get();
         item.setInMenu(request.isInMenu());
         return repository.save(item);
     }
+
 }
