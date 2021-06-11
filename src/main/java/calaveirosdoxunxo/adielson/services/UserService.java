@@ -52,7 +52,7 @@ public class UserService {
             user.setAddress(request.getAddress());
         }
         if (request.getCpf() != null) {
-            if (request.getCpf() < 100_000_000_00L) {
+            if (11 != request.getCpf().toString().length()) {
                 throw new IllegalArgumentException("Cpf is invalid!");
             }
             user.setCpf(request.getCpf());

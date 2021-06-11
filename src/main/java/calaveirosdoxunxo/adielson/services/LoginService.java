@@ -36,7 +36,7 @@ public class LoginService {
 
     public TokenResponse register(User user) {
         if (user.getEmail() == null || user.getName() == null
-                || user.getPassword() == null || user.getCpf() < 100_000_000_00D) {
+                || user.getPassword() == null || 11 != user.getCpf().toString().length()) {
             throw new IllegalArgumentException("Missing required fields");
         } else if (repository.findByEmail(user.getEmail()).isPresent()) {
             throw new IllegalArgumentException("Email is taken");
