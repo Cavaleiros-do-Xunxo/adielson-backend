@@ -7,6 +7,7 @@ import calaveirosdoxunxo.adielson.entities.OrderItem;
 import calaveirosdoxunxo.adielson.entities.User;
 import calaveirosdoxunxo.adielson.enums.Role;
 import calaveirosdoxunxo.adielson.enums.Status;
+import calaveirosdoxunxo.adielson.models.OrderAddress;
 import calaveirosdoxunxo.adielson.models.OrderItemRequest;
 import calaveirosdoxunxo.adielson.models.OrderRequest;
 import calaveirosdoxunxo.adielson.repositories.ItemRepository;
@@ -57,6 +58,8 @@ public class OrderService {
     public Order create(OrderRequest request, User user) {
         if (request.getItems() == null || request.getItems().isEmpty()) {
             throw new IllegalArgumentException("Missing items");
+        } else if (request.getOrderAddress().isEmpty() || request.getOrderAddress() == null) {
+            throw new IllegalArgumentException("Missing address");
         }
         Order order = new Order();
         order.setId(this.snowflake.next());
@@ -65,6 +68,7 @@ public class OrderService {
         order.setStatus(Status.WAITING);
         order.setOrderTime(System.currentTimeMillis());
         order.setDeliveryTime(null);
+        order.setOrderAddress(request.getOrderAddress());
 
         double total = 0;
         List<OrderItem> items = new ArrayList<>();
@@ -80,6 +84,15 @@ public class OrderService {
             items.add(orderItem);
             total += orderItem.getPrice();
         }
+
+        for (OrderAddress address : request.getOrderAddress()) {
+            OrderAddress orderAdd = new OrderAddress();
+            orderAdd.setAddress(address.getAddress());
+            orderAdd.setAddress2(address.getAddress2());
+            orderAdd.setZipCode(address.getZipCode());
+
+        }
+
         order.setTotal(total);
         this.repository.save(order);
         this.orderItems.saveAll(items);

@@ -11,6 +11,7 @@ public class OrderRequest {
 
     private DeliveryType delivery;
     private Status status;
+    private List<OrderAddress> orderAddress;
     private List<OrderItemRequest> items;
 
 }
