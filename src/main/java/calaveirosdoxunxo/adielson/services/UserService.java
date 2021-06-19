@@ -31,7 +31,7 @@ public class UserService {
     }
 
     public User find(long id, User user) {
-        if (user.getRole() == Role.CUSTOMER) {
+        if (user.getRole() == Role.CUSTOMER || user.getRole() == Role.ADMIN) {
             return user;
         } else {
             return repository.findById(id)
