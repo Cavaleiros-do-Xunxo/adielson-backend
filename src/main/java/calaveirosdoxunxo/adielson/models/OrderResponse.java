@@ -16,7 +16,7 @@ public class OrderResponse {
     private Long id;
     private User user;
     private List<OrderAddress> orderAddress;
-    private List<MenuItem> orderItems;
+    private List<OrderMenuItem> orderItems;
     private DeliveryType delivery;
     private Status status;
     private Double total;
@@ -33,13 +33,14 @@ public class OrderResponse {
         this.setOrderTime(order.getOrderTime());
         this.setDeliveryTime(order.getDeliveryTime());
 
-        List<MenuItem> menuItems = new ArrayList<>();
+        List<OrderMenuItem> orderMenuItems = new ArrayList<>();
 
         for (OrderItem orderItem : orderItems) {
-            menuItems.add(orderItem.getItem());
+            OrderMenuItem orderMenuItem = OrderMenuItem.build(orderItem.getCount(), orderItem.getPrice(), orderItem.getItem());
+            orderMenuItems.add(orderMenuItem);
         }
 
-        this.setOrderItems(menuItems);
+        this.setOrderItems(orderMenuItems);
 
         return this;
     }
