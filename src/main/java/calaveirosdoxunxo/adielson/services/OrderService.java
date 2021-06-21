@@ -68,9 +68,10 @@ public class OrderService {
         }
 
         if (oOrder.isPresent()) {
-            List<OrderItem> orderItems = orderItemsRepository.findAllByOrder(oOrder.orElseThrow());
+            Order order = oOrder.orElseThrow();
+            List<OrderItem> orderItems = orderItemsRepository.findAllByOrder(order);
             OrderResponse orderResponse = new OrderResponse();
-            orderResponse.build(oOrder.orElseThrow(), orderItems);
+            orderResponse.build(order, orderItems);
 
             return orderResponse;
         }
