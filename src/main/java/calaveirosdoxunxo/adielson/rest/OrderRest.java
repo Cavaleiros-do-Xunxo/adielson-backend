@@ -3,6 +3,7 @@ package calaveirosdoxunxo.adielson.rest;
 import calaveirosdoxunxo.adielson.advice.security.SessionProvider;
 import calaveirosdoxunxo.adielson.entities.Order;
 import calaveirosdoxunxo.adielson.models.OrderRequest;
+import calaveirosdoxunxo.adielson.models.OrderResponse;
 import calaveirosdoxunxo.adielson.services.OrderService;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,12 +22,12 @@ public class OrderRest {
     }
 
     @GetMapping
-    public List<Order> findAll(Order example) {
-        return service.findAll(example, session.getUser());
+    public List<OrderResponse> findAll(Order order) {
+        return service.findAll(order, session.getUser());
     }
 
     @GetMapping("/{id}")
-    public Order find(@PathVariable("id") long id) {
+    public OrderResponse find(@PathVariable("id") long id) {
         return service.find(id, session.getUser());
     }
 

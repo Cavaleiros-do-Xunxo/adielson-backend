@@ -10,6 +10,7 @@ import calaveirosdoxunxo.adielson.enums.Status;
 import calaveirosdoxunxo.adielson.models.OrderAddress;
 import calaveirosdoxunxo.adielson.models.OrderItemRequest;
 import calaveirosdoxunxo.adielson.models.OrderRequest;
+import calaveirosdoxunxo.adielson.models.OrderResponse;
 import calaveirosdoxunxo.adielson.repositories.ItemRepository;
 import calaveirosdoxunxo.adielson.repositories.OrderItemRepository;
 import calaveirosdoxunxo.adielson.repositories.OrderRepository;
@@ -24,35 +25,58 @@ import java.util.Optional;
 public class OrderService {
 
     private final OrderRepository repository;
-    private final OrderItemRepository orderItems;
+    private final OrderItemRepository orderItemsRepository;
     private final ItemRepository menuItems;
     private final Snowflake snowflake;
 
     public OrderService(
-            OrderRepository repository, OrderItemRepository orderItems,
+            OrderRepository repository, OrderItemRepository orderItemsRepository,
             ItemRepository menuItems, Snowflake snowflake
     ) {
         this.repository = repository;
-        this.orderItems = orderItems;
+        this.orderItemsRepository = orderItemsRepository;
         this.menuItems = menuItems;
         this.snowflake = snowflake;
     }
 
-    public List<Order> findAll(Order example, User user) {
+    public List<OrderResponse> findAll(Order order, User user) {
         if (user.getRole() == Role.CUSTOMER) {
-            example.setUser(user);
+            order.setUser(user);
         }
-        return repository.findAll(Example.of(example));
+
+        List<Order> orders = repository.findAll(Example.of(order));
+        List<OrderResponse> orderResponses = new ArrayList<>();
+
+        for (Order _order : orders) {
+            List<OrderItem> orderItems = orderItemsRepository.findAllByOrder(_order);
+
+            OrderResponse orderResponse = new OrderResponse();
+            orderResponse.build(_order, orderItems);
+            orderResponses.add(orderResponse);
+        }
+
+        return orderResponses;
     }
 
-    public Order find(long id, User user) {
+    public OrderResponse find(long id, User user) {
         Optional<Order> oOrder;
+
         if (user.getRole() == Role.CUSTOMER) {
             oOrder = repository.findByIdAndUser(id, user);
         } else {
             oOrder = repository.findById(id);
         }
-        return oOrder.orElseThrow(() -> new IllegalArgumentException("Unknown order"));
+
+        if (oOrder.isPresent()) {
+            Order order = oOrder.orElseThrow();
+            List<OrderItem> orderItems = orderItemsRepository.findAllByOrder(order);
+            OrderResponse orderResponse = new OrderResponse();
+            orderResponse.build(order, orderItems);
+
+            return orderResponse;
+        }
+
+        throw new IllegalArgumentException("Unknown order");
     }
 
     public Order create(OrderRequest request, User user) {
@@ -95,7 +119,7 @@ public class OrderService {
 
         order.setTotal(total);
         this.repository.save(order);
-        this.orderItems.saveAll(items);
+        this.orderItemsRepository.saveAll(items);
         return order;
     }
 
@@ -112,7 +136,7 @@ public class OrderService {
     public void delete(long id) {
         Order order = this.repository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Unknown order"));
-        this.orderItems.deleteAllByOrder(order);
+        this.orderItemsRepository.deleteAllByOrder(order);
         this.repository.deleteById(id);
     }
 
