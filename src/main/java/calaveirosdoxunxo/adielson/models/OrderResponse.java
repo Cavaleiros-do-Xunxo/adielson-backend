@@ -1,11 +1,12 @@
 package calaveirosdoxunxo.adielson.models;
 
-import calaveirosdoxunxo.adielson.entities.MenuItem;
+import calaveirosdoxunxo.adielson.advice.serializer.LongToStringSerializer;
 import calaveirosdoxunxo.adielson.entities.Order;
 import calaveirosdoxunxo.adielson.entities.OrderItem;
 import calaveirosdoxunxo.adielson.entities.User;
 import calaveirosdoxunxo.adielson.enums.DeliveryType;
 import calaveirosdoxunxo.adielson.enums.Status;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -13,6 +14,7 @@ import java.util.List;
 
 @Data
 public class OrderResponse {
+    @JsonSerialize(using = LongToStringSerializer.class)
     private Long id;
     private User user;
     private List<OrderAddress> orderAddress;
