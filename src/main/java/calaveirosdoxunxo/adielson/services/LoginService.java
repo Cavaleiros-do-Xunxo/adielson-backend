@@ -44,7 +44,11 @@ public class LoginService {
             throw new IllegalArgumentException("CPF is taken");
         }
         user.setId(this.snowflake.next());
-        user.setRole(Role.CUSTOMER);
+        if (repository.count() == 0) {
+            user.setRole(Role.ADMIN);
+        } else {
+            user.setRole(Role.CUSTOMER);
+        }
         user.setPassword(this.encoder.encode(user.getPassword()));
         repository.save(user);
         return new TokenResponse(this.generateToken(user.getId()));
