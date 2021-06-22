@@ -10,7 +10,6 @@ import calaveirosdoxunxo.adielson.enums.Status;
 import calaveirosdoxunxo.adielson.models.OrderAddress;
 import calaveirosdoxunxo.adielson.models.OrderItemRequest;
 import calaveirosdoxunxo.adielson.models.OrderRequest;
-import calaveirosdoxunxo.adielson.models.OrderResponse;
 import calaveirosdoxunxo.adielson.repositories.ItemRepository;
 import calaveirosdoxunxo.adielson.repositories.OrderItemRepository;
 import calaveirosdoxunxo.adielson.repositories.OrderRepository;
@@ -19,7 +18,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class OrderService {
@@ -39,44 +37,27 @@ public class OrderService {
         this.snowflake = snowflake;
     }
 
-    public List<OrderResponse> findAll(Order order, User user) {
+    public List<Order> findAll(Order order, User user) {
         if (user.getRole() == Role.CUSTOMER) {
             order.setUser(user);
         }
-
-        List<Order> orders = repository.findAll(Example.of(order));
-        List<OrderResponse> orderResponses = new ArrayList<>();
-
-        for (Order _order : orders) {
-            List<OrderItem> orderItems = orderItemsRepository.findAllByOrder(_order);
-
-            OrderResponse orderResponse = new OrderResponse();
-            orderResponse.build(_order, orderItems);
-            orderResponses.add(orderResponse);
-        }
-
-        return orderResponses;
+        return repository.findAll(Example.of(order));
     }
 
-    public OrderResponse find(long id, User user) {
-        Optional<Order> oOrder;
-
+    public Order find(long id, User user) {
+        Order order;
         if (user.getRole() == Role.CUSTOMER) {
-            oOrder = repository.findByIdAndUser(id, user);
+            order = this.repository.findByIdAndUser(id, user)
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid order"));
         } else {
-            oOrder = repository.findById(id);
+            order = this.repository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Invalid order"));
         }
+        return order;
+    }
 
-        if (oOrder.isPresent()) {
-            Order order = oOrder.orElseThrow();
-            List<OrderItem> orderItems = orderItemsRepository.findAllByOrder(order);
-            OrderResponse orderResponse = new OrderResponse();
-            orderResponse.build(order, orderItems);
-
-            return orderResponse;
-        }
-
-        throw new IllegalArgumentException("Unknown order");
+    public List<OrderItem> items(long id, User user) {
+        return this.orderItemsRepository.findAllByOrder(this.find(id, user));
     }
 
     public Order create(OrderRequest request, User user) {
@@ -114,7 +95,6 @@ public class OrderService {
             orderAdd.setAddress(address.getAddress());
             orderAdd.setAddress2(address.getAddress2());
             orderAdd.setZipCode(address.getZipCode());
-
         }
 
         order.setTotal(total);
