@@ -48,9 +48,6 @@ public class UserService {
         if (request.getPassword() != null) {
             user.setPassword(this.bcrypt.encode(request.getPassword()));
         }
-        if (request.getAddress() != null) {
-            user.setAddress(request.getAddress());
-        }
         if (request.getCpf() != null) {
             if (11 != request.getCpf().toString().length()) {
                 throw new IllegalArgumentException("Cpf is invalid!");

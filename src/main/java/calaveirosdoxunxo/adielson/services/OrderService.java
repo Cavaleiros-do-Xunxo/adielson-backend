@@ -1,15 +1,12 @@
 package calaveirosdoxunxo.adielson.services;
 
 import calaveirosdoxunxo.adielson.advice.Snowflake;
-import calaveirosdoxunxo.adielson.entities.MenuItem;
-import calaveirosdoxunxo.adielson.entities.Order;
-import calaveirosdoxunxo.adielson.entities.OrderItem;
-import calaveirosdoxunxo.adielson.entities.User;
+import calaveirosdoxunxo.adielson.entities.*;
 import calaveirosdoxunxo.adielson.enums.Role;
 import calaveirosdoxunxo.adielson.enums.Status;
-import calaveirosdoxunxo.adielson.models.OrderAddress;
 import calaveirosdoxunxo.adielson.models.OrderItemRequest;
 import calaveirosdoxunxo.adielson.models.OrderRequest;
+import calaveirosdoxunxo.adielson.repositories.AddressRepository;
 import calaveirosdoxunxo.adielson.repositories.ItemRepository;
 import calaveirosdoxunxo.adielson.repositories.OrderItemRepository;
 import calaveirosdoxunxo.adielson.repositories.OrderRepository;
@@ -26,15 +23,17 @@ public class OrderService {
     private final OrderItemRepository orderItemsRepository;
     private final ItemRepository menuItems;
     private final Snowflake snowflake;
+    private final AddressRepository addresses;
 
     public OrderService(
             OrderRepository repository, OrderItemRepository orderItemsRepository,
-            ItemRepository menuItems, Snowflake snowflake
-    ) {
+            ItemRepository menuItems, Snowflake snowflake,
+            AddressRepository addresses) {
         this.repository = repository;
         this.orderItemsRepository = orderItemsRepository;
         this.menuItems = menuItems;
         this.snowflake = snowflake;
+        this.addresses = addresses;
     }
 
     public List<Order> findAll(Order order, User user) {
@@ -63,7 +62,7 @@ public class OrderService {
     public Order create(OrderRequest request, User user) {
         if (request.getItems() == null || request.getItems().isEmpty()) {
             throw new IllegalArgumentException("Missing items");
-        } else if (request.getOrderAddress().isEmpty() || request.getOrderAddress() == null) {
+        } else if (request.getAddress() == null) {
             throw new IllegalArgumentException("Missing address");
         }
         Order order = new Order();
@@ -73,7 +72,15 @@ public class OrderService {
         order.setStatus(Status.WAITING);
         order.setOrderTime(System.currentTimeMillis());
         order.setDeliveryTime(null);
-        order.setOrderAddress(request.getOrderAddress());
+        order.setPayMethod(request.getPaymentMethod());
+
+        Address address = new Address();
+        address.setId(this.snowflake.next());
+        address.setUser(user);
+        address.setAddress(request.getAddress().getAddress());
+        address.setComplement(request.getAddress().getComplement());
+        this.addresses.save(address);
+        order.setAddress(address);
 
         double total = 0;
         List<OrderItem> items = new ArrayList<>();
@@ -88,13 +95,6 @@ public class OrderService {
             orderItem.setPrice(model.getCount() * item.getPrice());
             items.add(orderItem);
             total += orderItem.getPrice();
-        }
-
-        for (OrderAddress address : request.getOrderAddress()) {
-            OrderAddress orderAdd = new OrderAddress();
-            orderAdd.setAddress(address.getAddress());
-            orderAdd.setAddress2(address.getAddress2());
-            orderAdd.setZipCode(address.getZipCode());
         }
 
         order.setTotal(total);
